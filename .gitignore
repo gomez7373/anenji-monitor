@@ -1,0 +1,509 @@
+
+# ============================================================
+# ANENJI MONITOR - GITIGNORE
+# Local solar monitoring - ANENJI SPI4865M150-300
+# ============================================================
+#
+# PRIVACY FIRST
+#
+# Do not publish:
+# - Personal information
+# - IP addresses and network configurations
+# - Inverter serial numbers
+# - Battery and solar production records
+# - Authentication credentials
+# - SSH keys, tokens and passwords
+# - Private monitoring databases
+#
+# IMPORTANT:
+# .gitignore does NOT protect previously tracked files.
+# Always review changes before pushing to GitHub.
+# ============================================================
+
+
+# ============================================================
+# 1. PRIVATE DIRECTORIES
+# ============================================================
+
+/private/
+/secrets/
+/credentials/
+/sensitive/
+/personal/
+/local/
+/local-data/
+/private-data/
+/secure/
+/backup/
+/backups/
+/logs/
+/runtime/
+/sessions/
+/storage/
+/exports/
+/imports/
+/captures/
+/diagnostics/private/
+/data/
+
+
+# ============================================================
+# 2. NETWORK AND IP CONFIGURATION
+# ============================================================
+
+/network/private/
+/network/local/
+/network/config/
+/network/credentials/
+
+network.json
+network.local.json
+network.yaml
+network.local.yaml
+network.yml
+network.local.yml
+
+ip_config.json
+ip_config.yaml
+ip_config.yml
+
+ip-addresses.txt
+local-ip.txt
+public-ip.txt
+network-info.txt
+network-scan.txt
+
+hosts.local
+*.local.json
+*.local.yaml
+*.local.yml
+*.local.ini
+*.local.toml
+
+# Note: Git cannot recognize sensitive IPs
+# automatically inside otherwise allowed source files.
+
+
+# ============================================================
+# 3. ENVIRONMENT VARIABLES
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.template
+
+*.env
+*.env.local
+*.env.production
+*.env.development
+*.env.backup
+
+
+# ============================================================
+# 4. PRIVATE APPLICATION CONFIGURATION
+# ============================================================
+
+config.json
+config.yaml
+config.yml
+config.toml
+config.ini
+
+config.private.*
+config.local.*
+settings.local.*
+settings.private.*
+secrets.json
+secrets.yaml
+secrets.yml
+credentials.json
+credentials.yaml
+credentials.yml
+auth.json
+
+# Safe public examples are allowed:
+!config.example.json
+!config.example.yaml
+!config.example.yml
+!config.example.toml
+!config.example.ini
+
+
+# ============================================================
+# 5. SSH KEYS AND CERTIFICATES
+# ============================================================
+
+.ssh/
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+id_ecdsa
+id_ecdsa.pub
+
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+*.ppk
+*.keystore
+*.jks
+*.kdbx
+
+*.crt
+*.cer
+*.der
+*.csr
+
+known_hosts
+authorized_keys
+
+# Never copy your actual SSH keys into this repository.
+
+
+# ============================================================
+# 6. TOKENS, PASSWORDS AND AUTHENTICATION
+# ============================================================
+
+token.txt
+tokens.txt
+password.txt
+passwords.txt
+passwords.json
+apikey.txt
+api_key.txt
+api_keys.json
+access_token.json
+refresh_token.json
+auth_token.json
+service-account.json
+service-account-key.json
+
+*.secret
+*.secrets
+*.token
+
+
+# ============================================================
+# 7. INVERTER PRIVATE INFORMATION
+# ============================================================
+
+inverter-config.json
+inverter-settings.json
+inverter-private.json
+inverter-serial.txt
+serial-number.txt
+device-id.txt
+device-info-private.json
+inverter-identity.json
+
+inverter-raw.*
+serial-capture.*
+usb-capture.*
+modbus-capture.*
+
+# Protocol documentation written manually
+# and reviewed for publication may be committed.
+
+
+# ============================================================
+# 8. BATTERY INFORMATION
+# ============================================================
+
+battery-history.*
+battery-data.*
+battery-private.*
+battery-serial.*
+bms-history.*
+bms-private.*
+battery-cycles.*
+battery-health-records.*
+
+# Avoid publishing real household usage patterns.
+
+
+# ============================================================
+# 9. SOLAR PRODUCTION AND ENERGY CONSUMPTION
+# ============================================================
+
+solar-production.*
+solar-history.*
+pv-history.*
+energy-history.*
+energy-consumption.*
+household-consumption.*
+load-history.*
+power-history.*
+daily-production.*
+monthly-production.*
+yearly-production.*
+measurements-private.*
+
+
+# ============================================================
+# 10. DATABASES
+# ============================================================
+
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite3-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.mdb
+
+
+# ============================================================
+# 11. LOGS AND DEBUGGING
+# ============================================================
+
+*.log
+*.log.*
+*.trace
+*.dump
+*.core
+core
+core.*
+*.stackdump
+*.pcap
+*.pcapng
+*.har
+
+debug-output.txt
+serial-output.txt
+monitor-output.txt
+error-report-private.txt
+
+
+# ============================================================
+# 12. PYTHON VIRTUAL ENVIRONMENTS
+# ============================================================
+
+.venv/
+venv/
+env/
+ENV/
+virtualenv/
+.conda/
+
+
+# ============================================================
+# 13. PYTHON CACHE AND GENERATED FILES
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.tox/
+.nox/
+
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+*.egg
+*.egg-info/
+.eggs/
+
+build/
+dist/
+site/
+pip-wheel-metadata/
+
+.python-version.local
+
+
+# ============================================================
+# 14. JUPYTER
+# ============================================================
+
+.ipynb_checkpoints/
+
+# Notebooks may contain outputs with private data.
+# Review every notebook before committing.
+
+
+# ============================================================
+# 15. EDITOR FILES - VIM
+# ============================================================
+
+*.swp
+*.swo
+*.swn
+*~
+.netrwhist
+.viminfo
+Session.vim
+.view/
+
+
+# ============================================================
+# 16. OTHER EDITORS
+# ============================================================
+
+.vscode/
+.idea/
+*.sublime-workspace
+*.code-workspace
+
+
+# ============================================================
+# 17. OPERATING SYSTEM FILES
+# ============================================================
+
+.DS_Store
+Thumbs.db
+Thumbs.db:encryptable
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+.Trash-*/
+.Trashes/
+
+
+# ============================================================
+# 18. TEMPORARY FILES
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.cache
+*.lock.local
+
+tmp/
+temp/
+.cache/
+
+
+# ============================================================
+# 19. GENERATED REPORTS AND EXPORTS
+# ============================================================
+
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Public documentation or synthetic datasets
+# can be selectively allowed after manual review.
+
+
+# ============================================================
+# 20. SCREENSHOTS AND PHOTOGRAPHS
+# ============================================================
+
+/screenshots/private/
+/images/private/
+/photos/
+/recordings/
+
+# Screenshots may expose serial numbers,
+# IP addresses, account details or usage history.
+
+
+# ============================================================
+# 21. CONTAINERS AND LOCAL DEPLOYMENT
+# ============================================================
+
+docker-compose.override.yml
+compose.override.yml
+docker-compose.local.yml
+compose.local.yml
+
+/docker/private/
+/docker/secrets/
+/volumes/
+
+
+# ============================================================
+# 22. MONITORING AND DASHBOARD STATE
+# ============================================================
+
+/dashboard/private/
+/dashboard/cache/
+/dashboard/sessions/
+
+/monitoring/private/
+/monitoring/history/
+/monitoring/cache/
+
+/grafana/data/
+/prometheus/data/
+
+
+# ============================================================
+# 23. BACKUPS AND SYSTEM IMAGES
+# ============================================================
+
+*.img
+*.iso
+*.vhd
+*.vhdx
+*.qcow2
+*.vmdk
+
+*.sql
+*.sql.gz
+*.dump.sql
+
+
+# ============================================================
+# 24. KEEP PUBLIC DOCUMENTATION AND SOURCE CODE
+# ============================================================
+
+# Intended public files:
+#
+# README.md
+# LICENSE
+# .gitignore
+# config.example.json
+# requirements.txt
+# pyproject.toml
+# src/
+# tests/
+# docs/
+#
+# These are not excluded automatically.
+# Review their content before every commit.
+
+
+# ============================================================
+# END - ANENJI MONITOR
+# ============================================================
+
+
+# Node.js / Vite
+node_modules/
+.vite/
+npm-debug.log*
