@@ -1,91 +1,28 @@
+"""API local de ANENJI Monitor (SPI4865M150-300).
 
-"""
-============================================================
-ANENJI MONITOR - LOCAL BACKEND API
-============================================================
+- Conserva las rutas y los campos consumidos por React.
+- Consulta el estado del adaptador USB CH340 en cada petición.
+- No abre el puerto serial, no transmite comandos y no simula lecturas.
+- El protocolo específico del inversor aún no está verificado.
 
-Inverter: ANENJI SPI4865M150-300
-Language: Python 3
-Framework: FastAPI
-
-PURPOSE:
-    Provide a local API for displaying inverter measurements
-    in the React dashboard.
-
-SECURITY:
-    - No cloud connection required.
-    - No passwords or personal IP addresses stored.
-    - No electrical configuration commands.
-    - No simulated inverter measurements.
-    - Intended to run on localhost only.
-
-IMPORTANT:
-    The serial protocol for this exact inverter model
-    has not yet been verified.
-
-    Therefore, actual inverter readings are NOT implemented.
-
-    Until real measurements become available, values are
-    returned as null with received=False.
-
-============================================================
+Ejecutar desde la raíz del proyecto:
+    python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 """
 
-# ------------------------------------------------------------
-# IMPORTS
-# ------------------------------------------------------------
+import logging
+from typing import Any
 
-# FastAPI provides the local HTTP API.
 from fastapi import FastAPI
-
-# JSONResponse allows us to return JSON with cache controls.
 from fastapi.responses import JSONResponse
 
-
-# ------------------------------------------------------------
-# APPLICATION CONFIGURATION
-# ------------------------------------------------------------
-
-app = FastAPI(
-    title="ANENJI Monitor - Local API",
-
-    description=(
-        "Local read-only monitoring API for the "
-        "ANENJI SPI4865M150-300 solar inverter."
-    ),
-
-    version="0.1.0",
-
-    # Enable Swagger documentation.
-    docs_url="/docs",
-
-    # Disable the alternative documentation interface.
-    redoc_url=None,
-)
+# Se ejecuta Uvicorn desde ~/anenji-monitor, como backend.main:app.
+from backend.serial_reader import inspect_serial_port
 
 
-# ------------------------------------------------------------
-# INVERTER IDENTIFICATION
-# ------------------------------------------------------------
-
-# Public equipment model, not a personal serial number.
+LOGGER = logging.getLogger(__name__)
 INVERTER_MODEL = "ANENJI SPI4865M150-300"
 
-
-# ------------------------------------------------------------
-# AVAILABLE MEASUREMENTS
-# ------------------------------------------------------------
-
-# Each entry contains:
-#
-# 1. Internal variable name
-# 2. Display name
-# 3. Measurement unit
-#
-# These definitions are not actual measurements.
-# The hardware protocol must be verified before values
-# can be received.
-
+# ID, nombre visible y unidad. Son metadatos, NO mediciones.
 FIELDS = (
     ("pv_power", "Producción solar", "W"),
     ("pv_voltage", "Voltaje solar", "V"),
@@ -96,145 +33,113 @@ FIELDS = (
     ("inverter_temperature", "Temperatura", "°C"),
 )
 
+app = FastAPI(
+    title="ANENJI Monitor - Local API",
+    description=(
+        "API local de monitoreo, sin control eléctrico, para el "
+        "ANENJI SPI4865M150-300."
+    ),
+    version="0.2.0",
+    docs_url="/docs",
+    redoc_url=None,
+)
 
-# ------------------------------------------------------------
-# CURRENT COMMUNICATION STATE
-# ------------------------------------------------------------
 
-# This indicates whether real serial monitoring has been
-# implemented and verified.
-#
-# It does NOT indicate whether the FastAPI server is running.
-
-inverter_connection = "protocol_pending"
+def _json(payload: dict[str, Any]) -> JSONResponse:
+    """Desactiva el almacenamiento en caché de los estados y las lecturas."""
+    return JSONResponse(content=payload, headers={"Cache-Control": "no-store"})
 
 
-# ------------------------------------------------------------
-# ROUTE 1 - API HOME
-# ------------------------------------------------------------
+def _serial_status() -> dict[str, Any]:
+    """Consulta SOLO metadatos del puerto; nunca abre el USB.
+
+    La inspección ocurre en cada petición: así se ven desconexiones y
+    reconexiones sin reiniciar la API. Un adaptador reconocido NO es una
+    comunicación verificada con el inversor.
+    """
+    try:
+        return inspect_serial_port().to_dict()
+    except Exception:
+        # Fallar de forma conservadora: nunca afirmar que el equipo está conectado.
+        LOGGER.exception("Error inesperado al inspeccionar el dispositivo USB")
+        return {
+            "port": None,
+            "state": "inspection_error",
+            "device_present": False,
+            "usb_detected": False,
+            "adapter_verified": False,
+            "port_accessible": False,
+            "protocol_verified": False,
+            "measurements_received": False,
+            "message": "No se pudo determinar el estado del puerto serial.",
+        }
+
+
+def _empty_measurements() -> list[dict[str, Any]]:
+    """Devuelve únicamente campos pendientes; cero nunca significa 'sin datos'."""
+    return [
+        {
+            "id": field_id,
+            "label": label,
+            "unit": unit,
+            "value": None,
+            "received": False,
+        }
+        for field_id, label, unit in FIELDS
+    ]
+
 
 @app.get("/")
-def home():
-    """
-    Basic information about the local API.
-
-    URL:
-        http://127.0.0.1:8000/
-
-    This route does not access the inverter.
-    """
-
-    return JSONResponse(
-        content={
+def home() -> JSONResponse:
+    """Información básica de la API y estado actual del USB."""
+    status = _serial_status()
+    return _json(
+        {
             "application": "ANENJI Monitor",
             "model": INVERTER_MODEL,
             "api_status": "online",
-            "inverter_connection": inverter_connection,
+            "inverter_connection": status["state"],
             "documentation": "/docs",
             "measurements_endpoint": "/api/measurements",
-        },
-        headers={"Cache-Control": "no-store"},
+            "serial_status_endpoint": "/api/serial/status",
+        }
     )
 
-
-# ------------------------------------------------------------
-# ROUTE 2 - API HEALTH CHECK
-# ------------------------------------------------------------
 
 @app.get("/api/health")
-def health():
-    """
-    Verify that the Python API is running.
-
-    URL:
-        http://127.0.0.1:8000/api/health
-
-    IMPORTANT:
-        API online does not mean inverter connected.
-    """
-
-    return JSONResponse(
-        content={
+def health() -> JSONResponse:
+    """Distingue la salud de FastAPI de la disponibilidad del adaptador."""
+    status = _serial_status()
+    return _json(
+        {
             "api": "online",
-            "inverter": inverter_connection,
-        },
-        headers={"Cache-Control": "no-store"},
+            "inverter": status["state"],
+            "usb": {
+                "device_present": status["device_present"],
+                "adapter_verified": status["adapter_verified"],
+                "port_accessible": status["port_accessible"],
+            },
+        }
     )
 
 
-# ------------------------------------------------------------
-# ROUTE 3 - INVERTER MEASUREMENTS
-# ------------------------------------------------------------
+@app.get("/api/serial/status")
+def serial_status() -> JSONResponse:
+    """Diagnóstico local del CH340; no representa una lectura del inversor."""
+    return _json(_serial_status())
+
 
 @app.get("/api/measurements")
-def measurements():
-    """
-    Return the current measurement structure.
-
-    URL:
-        http://127.0.0.1:8000/api/measurements
-
-    CURRENT BEHAVIOR:
-        All readings are pending because the inverter
-        serial protocol has not been implemented.
-
-    VALUES:
-        value = None
-            No valid measurement has been received.
-
-        received = False
-            The field has not been measured successfully.
-
-    FRONTEND:
-        React uses these fields to display SCANNING...
-
-    FUTURE:
-        A verified serial reader will supply actual
-        readings from /dev/ttyUSB0.
-    """
-
-    # Build the measurement list from the field definitions.
-    measurement_list = []
-
-    for field_id, label, unit in FIELDS:
-
-        measurement_list.append(
-            {
-                "id": field_id,
-                "label": label,
-                "unit": unit,
-
-                # No hardware measurement received yet.
-                "value": None,
-
-                # React will display SCANNING...
-                "received": False,
-            }
-        )
-
-    # Return the complete API response.
-    return JSONResponse(
-        content={
+def measurements() -> JSONResponse:
+    """Mantiene la estructura que espera React, sin lecturas simuladas."""
+    status = _serial_status()
+    return _json(
+        {
             "device": INVERTER_MODEL,
-
-            # Connection status of the inverter protocol.
-            "connection": inverter_connection,
-
-            # No verified measurement timestamp exists.
+            "connection": status["state"],
             "updated_at": None,
-
-            # Measurements expected by the React dashboard.
-            "measurements": measurement_list,
-        },
-
-        # Prevent browsers from storing measurements in cache.
-        headers={
-            "Cache-Control": "no-store",
-        },
+            "measurements": _empty_measurements(),
+            # Campo adicional: React puede usarlo en una siguiente versión.
+            "serial": status,
+        }
     )
-
-
-# ------------------------------------------------------------
-# END OF FILE
-# ------------------------------------------------------------
-
