@@ -299,4 +299,4 @@ ANENJI SPI4865M150-300
 
 Identificar de forma **verificable** el protocolo serial del **SPI4865M150-300** (parámetros, solicitudes de **solo lectura**, estructura de respuesta y validación). El archivo `backend/serial_reader.py` **ya existe**, pero por ahora solo inspecciona el adaptador USB; falta implementar un lector de mediciones reales basado en consultas documentadas y compatibles.
 
-Una vez identificada la comunicación, validar las respuestas del inversor, asociarlas correctamente con los siete campos de `/api/measurements` y comprobar la visualización en React. **Solo entonces** sustituiremos `SCANNING...` por valores medidos. El historial y las alertas seguirán siendo una etapa posterior.
+Una vez identificada la comunicación, validar las respuestas del inversor, asociarlas correctamente con los siete campos de `/api/measurements` y comprobar la visualización en React. **Solo entonces** sustituiremos `SCANNING...` por valores medidos. El historial y las alertas seguirán siendo una etapa posterior...
